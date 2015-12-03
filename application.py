@@ -122,9 +122,9 @@ def allowed_file(filename):
 @app.route('/srv/convert/', methods=['POST'])
 def convert_file():
     if request.method == 'POST':
-        file = request.files['file']
+        file = request.files['rstFile']
         rst = ''
-        convert_to = request.form.post('convert_to')
+        convert_to = request.form.get('convert_to')
         if file and allowed_file(file.filename):
             rst = file.read()
             if convert_to == 'html':
@@ -133,7 +133,7 @@ def convert_file():
                 response = make_response(html_bz)
                 response.headers["Content-Disposition"] = "attachment; filename=" + file.filename + "html.bz2"
                 return response
-    return ""
+    return make_response("<html><body<h1>ouch</h1></body></html>")
 
 if __name__ == '__main__':
     app.run(host=app.config.get('HOST', '0.0.0.0'),

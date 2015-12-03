@@ -3,7 +3,7 @@
 {% block content %}
 
 <p>
-<form action="{{ request.script_root }}/srv/converter/" method="post" enctype="multipart/form-data">
+<form action="{{ request.script_root }}/srv/convert/" method="post" enctype="multipart/form-data">
     Select .rst to upload:
     <input type="file" name="rstFile" id="rtrFile">
     <input id="t_html" type="radio" value="html" name="convert_to"/><label for="t_html">HTML</label>
