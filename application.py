@@ -5,7 +5,7 @@ import os, sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-from flask import Flask, request, render_template, make_response, url_for
+from flask import Flask, request, render_template, make_response, url_for, redirect
 
 from rsted.html import rst2html as _rst2html
 from rsted.pdf import rst2pdf as _rst2pdf
@@ -13,14 +13,20 @@ from rsted.pdf import rst2pdf as _rst2pdf
 from flaskext.redis import RedisManager
 from flaskext.helpers import render_html
 
+import bz2
+
 # handle relative path references by changing to project directory
 run_from = os.path.dirname(os.path.abspath(sys.argv[0]))
 if run_from != os.path.curdir:
     os.chdir(run_from)
 
+UPLOAD_FOLDER = 'uploads/'
+ALLOWED_EXTENSIONS = set(['rst'])
+
 # create our little application :)
 app = Flask(__name__)
 app.config.from_pyfile(os.environ.get('RSTED_CONF', 'settings.py'))
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 redis = RedisManager(app).get_instance()
 
 REDIS_EXPIRE = app.config.setdefault('REDIS_EXPIRE', 60*60*24*30*6) # Default 6 months
@@ -54,6 +60,10 @@ def index():
 @app.route('/about/')
 def about():
     return render_template('about.html')
+
+@app.route('/convert/')
+def convert():
+    return render_template('convert.html')
 
 @app.route('/srv/rst2html/', methods=['POST', 'GET'])
 def rst2html():
@@ -106,6 +116,24 @@ def del_rst():
     response.headers['Content-Type'] = 'text/plain'
     return response
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/srv/convert/', methods=['POST'])
+def convert_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        rst = ''
+        convert_to = request.form.post('convert_to')
+        if file and allowed_file(file.filename):
+            rst = file.read()
+            if convert_to == 'html':
+                html = _rst2html(rst, theme="nature");
+                html_bz = bz2.compress(html)
+                response = make_response(html_bz)
+                response.headers["Content-Disposition"] = "attachment; filename=" + file.filename + "html.bz2"
+                return response
+    return ""
 
 if __name__ == '__main__':
     app.run(host=app.config.get('HOST', '0.0.0.0'),
