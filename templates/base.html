@@ -29,6 +29,7 @@
                 <ul class="menu" id="menu">
                     <li class="{{ is_active('index') }}"><a href="{{ url_for('index') }}">Editor</a>
                     </li>
+                    <li class="{{ is_active('index') }}"><a href="{{ url_for('convert') }}">Converter</a></li>
                     <li class="{{ is_active('about') }}"><a href="{{ url_for('about') }}">About</a></li>
                 </ul>
                 {% endblock -%}
