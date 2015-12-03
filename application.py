@@ -131,9 +131,11 @@ def convert_file():
                 html = _rst2html(rst, theme="nature");
                 html_bz = bz2.compress(html)
                 response = make_response(html_bz)
-                response.headers["Content-Disposition"] = "attachment; filename=" + file.filename + "html.bz2"
+                response.headers["Content-Disposition"] = "attachment; filename=" + file.filename + ".html.bz2"
                 return response
-    return make_response("<html><body<h1>ouch</h1></body></html>")
+            else if convert_to == 'pdf':
+                return redirect(url_for('convert', reason='unsupported format'))
+    return redirect(url_for('convert'))
 
 if __name__ == '__main__':
     app.run(host=app.config.get('HOST', '0.0.0.0'),
